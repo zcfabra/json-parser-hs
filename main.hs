@@ -1,5 +1,7 @@
 module Main where
 import Data.Char (isDigit)
+import Data.Monoid
+import Data.Foldable
 
 data Json = 
     JsonString String 
@@ -10,7 +12,45 @@ data Json =
     | JsonBool Bool 
     deriving (Show, Eq)
 
-isValidTerminated c = c == ',' || c == '}' || c == ']'
+
+{-
+    We want to apply a bunch of (Char -> Bool) functions 
+    So, we need an operation that takes one:
+        (Char -> Bool) and another (Char -> Bool)
+    And merges them into a single predicate 
+
+    f :: (Char -> Bool) -> (Char -> Bool) -> Char -> Bool
+    This is basically a binary op on the same type of (Char -> Bool)
+    Which makes it suitable to consider as a monoid
+
+    The `->` in a function type is actually itself a type which is parameterized
+    by an Input and an Output type
+
+    (a -> b) is monoid only if the result type is a monoid
+    Monoid b => Monoid (a -> b)
+
+    In our case of (Char -> Bool), Bool does not satisfy Monoid
+
+    But, Any and All are 2 Boolean 'wrappers' which do satisfy Monoid
+
+    If we turn (Char -> Bool) into (Char -> Any), the function will then satisfy 
+    Monoid
+
+    Compose Any . (Char -> Bool)
+
+    Can then use mappend to combine 2 Char -> Any operations
+    But, this only works w/ 2 Monoid fns, want arbitrarily many
+
+    We basically want to be able to fold together a list of predicates of type
+    Char -> Any 
+
+    fold :: (Foldable t, Monoid m) => t m -> m
+
+    List is Foldable, so fold can take a list of Char -> Any Monoids and collapse
+    them to a monoid
+-} 
+
+isValidTerminated = getAny . foldMap  (Any .) [( == ','), (=='}'), (==']')]
 
 parseBool remaining boolVal = 
     case remaining of 
