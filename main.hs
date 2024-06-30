@@ -95,7 +95,8 @@ parse c =
 
 main :: IO ()
 main = do
-    let parsed = parse $ filter (/= ' ') "{\"elements\":[90.0, \"hi\"], \"thing\": null, \"isHappy\": false}"
+
+    let parsed = parse $ filter (\el -> el /= ' ' &&  el /= '\n') "{\"parentList\":[{\"elements\":[90.0, \"hi\"], \"thing\": null, \"isHappy\": false}]}"
         in case parsed of
             Right (res, rem) -> print res
             Left e -> print e 
