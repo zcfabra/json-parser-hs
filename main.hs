@@ -10,8 +10,23 @@ data Json =
     | JsonBool Bool 
     deriving (Show, Eq)
 
-parseBool remaining boolVal = Right (JsonBool boolVal, remaining)
-parseNull t = Right (JsonNull, t)
+isValidTerminated c = c == ',' || c == '}' || c == ']'
+
+parseBool remaining boolVal = 
+    case remaining of 
+        (h:t) | isValidTerminated h  -> Right (JsonBool boolVal, remaining)
+        x  -> 
+            Left $ 
+            "Invalid character following bool: "  
+            ++ show boolVal 
+            ++ " - `"
+            ++ show x 
+            ++ "`"
+
+parseNull remaining = 
+    case remaining of 
+        (h:t) | isValidTerminated h -> Right (JsonNull, remaining)
+        x -> Left $ "Invalid values following null: `" ++ show x ++ "`"
 parseStr s =
     let 
         aux str acc = 
