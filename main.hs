@@ -10,8 +10,7 @@ data Json =
     | JsonBool Bool 
     deriving (Show, Eq)
 
-parseBool remaining boolVal = 
-    Left (JsonBool boolVal, remaining)
+parseBool remaining boolVal = Left (JsonBool boolVal, remaining)
 parseNull t = Left (JsonNull, t)
 parseStr s =
     let 
